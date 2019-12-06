@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const encrypt = require("mongoose-encryption");
 
 const url = process.env.DB_CONNECTION;
 var Schema = mongoose.Schema;
@@ -7,11 +6,6 @@ var Schema = mongoose.Schema;
 const userSchema = new Schema({
   email: String,
   password: String
-});
-
-userSchema.plugin(encrypt, {
-  secret: process.env.SECRET,
-  encryptedFields: ["password"]
 });
 
 const User = new mongoose.model("User", userSchema);

@@ -3,6 +3,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const persistence = require("./persistence.js");
+const md5 = require("md5");
 
 const app = express();
 
@@ -22,9 +23,10 @@ app.route("/login")
     .post((req, res) => {
         const email = req.body.username;
         const password = req.body.password;
+        const hash = md5(password);
         persistence.getUser(email, (user) => 
         {
-            if (user && user.password === password) {
+            if (user && user.password === hash) {
                 res.render("secrets")
             } else {
                 res.sendStatus(401);
@@ -39,7 +41,8 @@ app.route("/register")
     .post((req, res) => {
         const email = req.body.username;
         const password = req.body.password;
-        persistence.registerUser(email, password, () => res.render("secrets"))
+        const hash = md5(password);
+        persistence.registerUser(email, hash, () => res.render("secrets"))
     });
 
 app.listen(3000, function() {
