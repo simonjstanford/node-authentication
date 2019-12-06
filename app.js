@@ -18,6 +18,18 @@ app.route("/")
 app.route("/login")
     .get((req, res) => {
         res.render("login");
+    })
+    .post((req, res) => {
+        const email = req.body.username;
+        const password = req.body.password;
+        persistence.getUser(email, (user) => 
+        {
+            if (user && user.password === password) {
+                res.render("secrets")
+            } else {
+                res.sendStatus(401);
+            }
+        })
     });
 
 app.route("/register")
@@ -26,7 +38,8 @@ app.route("/register")
     })
     .post((req, res) => {
         const email = req.body.username;
-        persistence.registerUser()
+        const password = req.body.password;
+        persistence.registerUser(email, password, () => res.render("secrets"))
     });
 
 app.listen(3000, function() {
