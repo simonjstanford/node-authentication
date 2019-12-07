@@ -3,7 +3,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const persistence = require("./persistence.js");
-const md5 = require("md5");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 
 const app = express();
 
@@ -23,16 +24,25 @@ app.route("/login")
     .post((req, res) => {
         const email = req.body.username;
         const password = req.body.password;
-        const hash = md5(password);
-        persistence.getUser(email, (user) => 
-        {
-            if (user && user.password === hash) {
-                res.render("secrets")
+      
+        persistence.getUser(email, (user) => {
+            if (user) {
+                compareHash(password, user.password, res);
             } else {
                 res.sendStatus(401);
-            }
-        })
+            }     
+        });    
     });
+
+function compareHash(passwordToCheck, hashedPassword, res) {
+    bcrypt.compare(passwordToCheck, hashedPassword, (err, isMatch) => {
+        if (isMatch) {
+            res.render("secrets");
+        } else {
+            res.sendStatus(401);
+        }
+    });
+}
 
 app.route("/register")
     .get((req, res) => {
@@ -41,10 +51,13 @@ app.route("/register")
     .post((req, res) => {
         const email = req.body.username;
         const password = req.body.password;
-        const hash = md5(password);
-        persistence.registerUser(email, hash, () => res.render("secrets"))
+        bcrypt.hash(password, saltRounds, (err, hash) => {
+            persistence.registerUser(email, hash, () => res.render("secrets"))
+        });
     });
 
 app.listen(3000, function() {
     console.log("Server started on port 3000");
 });
+
+
