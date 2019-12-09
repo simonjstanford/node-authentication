@@ -1,0 +1,1 @@
+module.exports.goToHome = (req, res) => res.render("home");
