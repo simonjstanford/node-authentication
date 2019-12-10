@@ -6,25 +6,16 @@ module.exports.gotToLogin = (req, res) => {
     res.render("login");
 }
 
-module.exports.login = (req, res) => {
-    const email = req.body.username;
-    const password = req.body.password;
-  
-    persistence.getUser(email, (user) => {
-        if (user) {
-            compareHash(password, user.password, res);
-        } else {
-            res.sendStatus(401);
-        }     
-    });    
-}
+module.exports.verifyUser = function(username, password, cb) {
+    persistence.getUserByEmail(username, function(user) {
+        if (!user) { return cb(null, false); }
 
-function compareHash(passwordToCheck, hashedPassword, res) {
-    bcrypt.compare(passwordToCheck, hashedPassword, (err, isMatch) => {
-        if (isMatch) {
-            res.render("secrets");
-        } else {
-            res.sendStatus(401);
-        }
-    });
+        bcrypt.compare(password, user.password, (err, isMatch) => {
+            if (isMatch) {
+                return cb(null, user);
+            } else {
+                return cb(null, false);
+            }
+        });
+  });
 }

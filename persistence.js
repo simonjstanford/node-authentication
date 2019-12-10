@@ -21,9 +21,19 @@ exports.registerUser = function(email, password, callback) {
   });
 };
 
-exports.getUser = function(email, callback) {
+exports.getUserByEmail = function(email, callback) {
   openConnection();
   User.findOne({email: email}, (err, user) => {
+    if (err) {
+      console.log(err);
+    }
+    mongoose.connection.close(() => callback(user));
+  });
+};
+
+exports.getUserById = function(id, callback) {
+  openConnection();
+  User.findById(id, (err, user) => {
     if (err) {
       console.log(err);
     }
