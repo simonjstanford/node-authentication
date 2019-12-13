@@ -41,6 +41,26 @@ exports.getUserById = function(id, callback) {
   });
 };
 
+exports.findOrCreate = function(email, callback) {
+  openConnection();
+  User.findOne({email: email}, (err, user) => {
+    if (err) {
+      console.log(err);
+    }
+    if (user) {
+      mongoose.connection.close(() => callback(user));
+    } else {
+      const newUser = new User({email: email});
+      newUser.save((err) => {
+        if (err) {
+          console.log(err);
+        }
+        mongoose.connection.close(() => callback(newUser));
+      });
+    }
+  });
+}
+
 function openConnection() {
   mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
 }
