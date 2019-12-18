@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const findOrCreate = require('mongoose-findorcreate');
 
 const url = process.env.DB_CONNECTION;
 var Schema = mongoose.Schema;
@@ -8,6 +9,8 @@ const userSchema = new Schema({
   password: String,
   secret: String
 });
+
+userSchema.plugin(findOrCreate);
 
 const User = new mongoose.model("User", userSchema);
 
@@ -52,23 +55,11 @@ exports.saveUser = function(user, callback) {
   });
 };
 
-exports.findOrCreate = function(email, callback) {
+exports.findOrCreate = function(id, callback) {
   openConnection();
-  User.findOne({email: email}, (err, user) => {
-    if (err) {
-      console.log(err);
-    }
-    if (user) {
-      mongoose.connection.close(() => callback(user));
-    } else {
-      const newUser = new User({email: email});
-      newUser.save((err) => {
-        if (err) {
-          console.log(err);
-        }
-        mongoose.connection.close(() => callback(newUser));
-      });
-    }
+  User.findOrCreate({ googleId: id }, function (err, user) {
+    console.log(err);
+    mongoose.connection.close(() => callback(err, user));
   });
 }
 
