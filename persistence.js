@@ -5,7 +5,8 @@ var Schema = mongoose.Schema;
 
 const userSchema = new Schema({
   email: String,
-  password: String
+  password: String,
+  secret: String
 });
 
 const User = new mongoose.model("User", userSchema);
@@ -41,6 +42,16 @@ exports.getUserById = function(id, callback) {
   });
 };
 
+exports.saveUser = function(user, callback) {
+  openConnection();
+  user.save((err) => {
+    if (err) {
+      console.log(err);
+    }
+    mongoose.connection.close(() => callback());
+  });
+};
+
 exports.findOrCreate = function(email, callback) {
   openConnection();
   User.findOne({email: email}, (err, user) => {
@@ -57,6 +68,20 @@ exports.findOrCreate = function(email, callback) {
         }
         mongoose.connection.close(() => callback(newUser));
       });
+    }
+  });
+}
+
+exports.getAllSecrets = (callback) => {
+  openConnection();
+  User.find({"secret": {$ne: null}}, (err, users) => {
+    if (err) {
+      console.log(err);
+      mongoose.connection.close(() => callback());
+    }
+    else if (users) {
+      const secrets = users.map(u => u.secret);
+      mongoose.connection.close(() => callback(secrets));
     }
   });
 }

@@ -54,8 +54,11 @@ app.route("/register")
     .post(routes.register.register);
 
 app.route("/secrets")
-    .get(require('connect-ensure-login').ensureLoggedIn(), (req, res) => res.render('secrets', { user: req.user }));
+    .get(routes.secrets.getAllSecrets);
 
+app.route("/submit")
+    .get(routes.secrets.goToSubmit)
+    .post(routes.secrets.submitSecret);
     
 app.get('/logout',
   (req, res) => {
