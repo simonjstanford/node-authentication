@@ -6,7 +6,6 @@ const persistence = require("./persistence.js");
 
 const passport = require('passport');
 const Strategy = require('passport-local').Strategy;
-const GoogleStrategy = require("passport-google-oauth20").Strategy; 
 
 // Configure the local strategy for use by Passport.
 //
@@ -15,26 +14,6 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 // that the password is correct and then invoke `cb` with a user object, which
 // will be set at `req.user` in route handlers after authentication.
 passport.use(new Strategy(routes.login.verifyUser));
-
-// Configure the Google strategy for use by Passport.
-//
-// OAuth 2.0-based strategies require a `verify` function which receives the
-// credential (`accessToken`) for accessing the Google API on the user's
-// behalf, along with the user's profile.  The function must invoke `cb`
-// with a user object, which will be set at `req.user` in route handlers after
-// authentication.
-passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: process.env.GOOGLE_CALLBACK_URL,
-  userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
-}, 
-function(accessToken, refreshToken, profile, cb) {
-  persistence.findOrCreate(profile.id, function(err, user) {
-    return cb(err, user);
-  });
-}
-));
 
 // Configure Passport authenticated session persistence.
 //
@@ -77,9 +56,7 @@ app.route("/register")
 app.route("/secrets")
     .get(require('connect-ensure-login').ensureLoggedIn(), (req, res) => res.render('secrets', { user: req.user }));
 
-app.route("/auth/google")
-    .get(routes.google.authenticate);
-
+    
 app.get('/logout',
   (req, res) => {
     req.logout();
